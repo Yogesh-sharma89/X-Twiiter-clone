@@ -6,7 +6,7 @@ const userRoutes = Router();
 
 userRoutes.use(protectedRoute)
 
-userRoutes.get('/profile/:username',getUserProfile);
+userRoutes.get('/profile',getUserProfile);
 
 userRoutes.put('/profile',updateprofile);
 
@@ -14,7 +14,7 @@ userRoutes.post('/sync',adddUserToDb);
 
 userRoutes.get('/me',getCurrentUser);
 
-userRoutes.post('follow/:userId',followUser);
+userRoutes.post('/follow/:userId',followUser);
 
 userRoutes.post('/unfollow/:userId',unfollowUser);
 

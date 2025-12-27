@@ -43,8 +43,8 @@ const postSchema = new Schema({
 
 },{timestamps:true})
 
-postSchema.pre('save',function(next){
-    if(!this.content || this.media.length===0){
+postSchema.pre('validate',function(next){
+    if(!this.content && this.media.length===0){
         return next(new Error('Post must have either content or media ( image , video)'))
     }
     next()

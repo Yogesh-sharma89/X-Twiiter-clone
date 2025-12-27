@@ -32,7 +32,7 @@ const notificationSchema = new Schema({
 
 
 notificationSchema.pre('validate',function (next){
-    if(this.from.equals(this.to)){
+    if(this.from && this.to && this.from.equals(this.to)){
         return next(new Error("You can't notify yourself"))
     }
 

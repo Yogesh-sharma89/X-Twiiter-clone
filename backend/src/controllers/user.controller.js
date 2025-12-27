@@ -9,7 +9,7 @@ import Notification from '../models/notification.model.js';
 export const getUserProfile = asyncHandler(async(req,res)=>{
     const {userId} = getAuth(req);
 
-    const user = await User.find({clerkId:userId});
+    const user = await User.findOne({clerkId:userId});
 
     if(!user){
         return res.status(404).json({message:'User not found'})
@@ -32,9 +32,7 @@ export const updateprofile = asyncHandler(async(req,res)=>{
     return res.status(200).json({message:'profile updated successfully',user:updatedUser});
 })
 
-export const syncUserToDb = asyncHandler(async(req,res)=>{
-    
-})
+
 
 
 export const adddUserToDb  = asyncHandler(async(req,res)=>{
@@ -43,7 +41,7 @@ export const adddUserToDb  = asyncHandler(async(req,res)=>{
 
      //check if user is alreday exist or not 
 
-     const existingUser = await User.find({clerkId:userId});
+     const existingUser = await User.findOne({clerkId:userId});
 
      if(existingUser){
         return res.status(400).json({message:'User already exists'})
@@ -62,7 +60,7 @@ export const adddUserToDb  = asyncHandler(async(req,res)=>{
      const newUser = await User.create({
         firstname:clerkUser.firstName || '',
         lastname:clerkUser.lastName || '',
-        email:clerkUser.primaryEmailAddress.emailAddress ,
+        email:clerkUser.primaryEmailAddress?.emailAddress ,
         clerkId:userId,
         imageUrl:clerkUser.imageUrl || '',
         postCount:0,
@@ -78,7 +76,7 @@ export const adddUserToDb  = asyncHandler(async(req,res)=>{
 export const getCurrentUser = asyncHandler(async(req,res)=>{
     const {userId} = getAuth(req);
 
-    const user = await User.find({clerkId:userId});
+    const user = await User.findOne({clerkId:userId});
 
     if(!user){
         return res.status(404).json({message:'User not found'})
@@ -112,7 +110,7 @@ export const followUser = asyncHandler(async(req,res)=>{
         return res.status(404).json({message:'User you want to follow does not exists.'});
     }
 
-    const currentUser = await User.findById(currentUserId);
+    const currentUser = await User.findOne({clerkId:currentUserId});
 
     if(currentUser && currentUser.accountStatus==='active'){
         //then i will allow user to follow one another
@@ -146,7 +144,9 @@ export const followUser = asyncHandler(async(req,res)=>{
         //increase than peron followers count who is following by current user
         followingUser.followers+=1;
 
-        await currentUser.save();
+        await currentUser.save({session});
+
+        await followingUser.save({session});
 
         //now update follow document;
 
@@ -166,7 +166,7 @@ export const followUser = asyncHandler(async(req,res)=>{
 
         await session.commitTransaction();
 
-        res.status(200).json({message:'Followed successfully',follower:currentUser,following:followingUser});
+       return  res.status(200).json({message:'Followed successfully',follower:currentUser,following:followingUser});
     }
 
     return res.status(400).json({message:"You can't follow anyone"});
@@ -199,7 +199,7 @@ export const unfollowUser = asyncHandler(async(req,res)=>{
         return res.status(404).json({message:'The user you want to unfollow do not exists'});
     }
 
-    const currentUser = await User.findById(currentUserId);
+    const currentUser = await User.findOne({clerkId:currentUserId});
 
     if(!currentUser || currentUser.accountStatus!=='active' ){
          await session.abortTransaction();
@@ -230,12 +230,14 @@ export const unfollowUser = asyncHandler(async(req,res)=>{
 
     unFollowingUser.followers-=1;
 
-    await currentUser.save();
-    await unFollowingUser.save();
+    await currentUser.save({session});
+    await unFollowingUser.save({session});
 
     //now update follow document 
 
     await Follow.findByIdAndDelete(alreadyFollow._id,{session});
+
+     await session.commitTransaction();
 
     return res.status(200).json({message:'Unfollowed successfully'})
 })
