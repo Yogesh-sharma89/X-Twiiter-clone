@@ -15,7 +15,8 @@ const userSchema = new Schema({
         required:true,
         unique:true,
         lowercase:true,
-        index:true
+        index:true,
+        match: [/^\S+@\S+\.\S+$/, 'Invalid email format']
     },
      clerkId:{
         type:String,
@@ -29,14 +30,16 @@ const userSchema = new Schema({
      },
      postCount:{
       type:Number,
-      default:0
+      default:0,
+      min:0
      },
      username:{
         type:String,
         required:true,
         unique:true,
         lowercase:true,
-        trim:true
+        trim:true,
+        match: [/^[a-zA-Z0-9_]+$/, 'Username can contain only letters, numbers, _']
      },
      bannerImage:{
         type:String,
@@ -45,7 +48,13 @@ const userSchema = new Schema({
      bio:{
         type:String,
         default:'',
-        maxLength:200
+        maxLength:200,
+        validate:{
+         validator:function (value){
+            return value.length<200
+         },
+         message:'Bio cannot exceed 200 characters'
+        }
      },
      location:{
         type:String,
@@ -53,17 +62,20 @@ const userSchema = new Schema({
      },
      followers:{
       type:Number,
-      default:0
+      default:0,
+      min:0
      },
      following:{
       type:Number,
-      default:0
+      default:0,
+      min:0
      },
      accountStatus:{
       type:String,
       enum:['active','deleted'],
       default:'active'
      },
+
 
      deletedAt:{
       type:Date,
