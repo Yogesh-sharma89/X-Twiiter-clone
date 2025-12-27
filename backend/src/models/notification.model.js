@@ -14,7 +14,8 @@ const notificationSchema = new Schema({
     },
     type:{
         type:String,
-        enum:['follow','like','comment']
+        enum:['follow','like','comment'],
+        required:true
     },
     post:{
         type:Schema.Types.ObjectId,
@@ -28,6 +29,27 @@ const notificationSchema = new Schema({
     }
 
 },{timestamps:true})
+
+
+notificationSchema.pre('validate',function (next){
+    if(this.from && this.to && this.from.equals(this.to)){
+        return next(new Error("You can't notify yourself"))
+    }
+
+    if(this.type==='follow' && (this.post || this.comment)){
+        return next(new Error('Follow notification should not have post/comments'))
+    }
+
+    if(this.type==='like' && !this.post){
+        return next(new Error('Like notification must have a post'))
+    }
+
+    if(this.type==='comment' && (!this.post || !this.comment)){
+        return next(new Error('Comment notification must have a post and a comment'))
+    }
+
+    next();
+})
 
 
 const Notification = model('Notification',notificationSchema);

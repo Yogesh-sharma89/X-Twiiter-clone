@@ -2,6 +2,8 @@ import express from 'express';
 import dotenv from 'dotenv';
 import { clerkMiddleware } from '@clerk/express'
 import ConnectToDb from './config/db.js';
+import userRoutes from './routes/user.js';
+import cors from 'cors';
 
 dotenv.config();
 
@@ -11,6 +13,7 @@ const port  = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(clerkMiddleware())
+app.use(cors());
 
 
 
@@ -29,3 +32,9 @@ const StartConnection = async ()=>{
 }
 
 StartConnection();
+
+app.get('/',(req,res)=>{
+    return res.json({message:'Server is up and running properly'})
+})
+
+app.use('/api/user',userRoutes)
