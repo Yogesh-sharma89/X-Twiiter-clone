@@ -14,9 +14,14 @@ const notificationSchema = new Schema({
     },
     type:{
         type:String,
-        enum:['follow','like','comment'],
+        enum:['follow','reaction','comment','dislike'],
         required:true
     },
+    reaction:{
+        type:String,
+        default:null
+    },
+
     post:{
         type:Schema.Types.ObjectId,
         ref:'Post',
@@ -26,6 +31,13 @@ const notificationSchema = new Schema({
         type:Schema.Types.ObjectId,
         ref:'Comment',
         default:null
+    },
+    isRead:{
+        type:Boolean,
+        default:false,
+    },
+    readAt:{
+        type:Date,
     }
 
 },{timestamps:true})

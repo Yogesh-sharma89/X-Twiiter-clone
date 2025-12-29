@@ -16,13 +16,25 @@ const postSchema = new Schema({
                 type:String,
                 enum:['image','video']
             },
-            url:String
+            url:String,
+            publicId:String
         }
     ],
-    likesCount:{
+    reactionsCount: {
+        like: { type: Number, default: 0 },
+        love: { type: Number, default: 0 },
+        celebrate: { type: Number, default: 0 },
+        support: { type: Number, default: 0 },
+        insightful: { type: Number, default: 0 },
+        haha: { type: Number, default: 0 },
+        fire: { type: Number, default: 0 },
+        sad: { type: Number, default: 0 },
+     },
+    totalReactions:{
         type:Number,
         default:0
     },
+    
     dislikeCount:{
         type:Number,
         default:0
@@ -36,9 +48,18 @@ const postSchema = new Schema({
         enum:['public','private','followers'],
         default:'public'
     },
+    allowedUsers:[
+        {
+            type:Schema.Types.ObjectId,
+            ref:'User',
+        }
+    ],
     isDeleted:{
         type:Boolean,
         default:false
+    },
+    deletedAt:{
+        type:Date,
     }
 
 },{timestamps:true})

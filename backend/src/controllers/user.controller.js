@@ -7,31 +7,76 @@ import mongoose from 'mongoose';
 import Notification from '../models/notification.model.js';
 
 export const getUserProfile = asyncHandler(async(req,res)=>{
+
     const {userId} = getAuth(req);
 
-    const user = await User.findOne({clerkId:userId});
+    const {username} = req.params;
 
-    if(!user){
-        return res.status(404).json({message:'User not found'})
+    const profileUser = await User.findOne({username}).lean();
+
+    if(!profileUser){
+        return res.status(404).json({message:'Profile owner not found.'})
     }
 
-    return res.status(200).json({message:'Profile get successfully',user});
+    const viewer = null;
+
+    if(userId){
+        viewer = await User.findOne({clerkId:userId});
+    }
+
+    const isOwner = viewer && viewer._id.equals(profileUser._id);
+
+    //owner can obviosly see his profile but also followe can see his profile
+
+    if(profileUser.privacy==='private' && !isOwner){
+        //check if viewer is a follower of profileUser ;
+
+        const isFollower = await Follow.exists({
+            followerId:viewer._id,
+            followingId:profileUser._id
+        })
+
+        if(!isFollower){
+            return res.status(403).json({message:'This account is private'})
+        }
+    }
+
+    return res.status(200).json({message:'Profile fetch successfully',user:profileUser})
+
+    
 })
 
 export const updateprofile = asyncHandler(async(req,res)=>{
+
     const {userId} = getAuth(req);
 
-    const user = await User.findOne({clerkId:userId});
+    const {username} = req.params;
 
-    if(!user){
+    const currentUser = await User.findOne({clerkId:userId}).lean();
+
+    if(!currentUser){
         return res.status(404).json({message:'User not found'})
+    }
+
+    const profileOwner = await User.findOne({username}).lean();
+
+    if(!profileOwner){
+        return res.status(400).json({message:'Profile not found'})
+    }
+
+    if(profileOwner.accountStatus!=='active'){
+        return res.status(400).json({message:'This profile account is not active'})
+    }
+
+
+    if(!currentUser._id.equals(profileOwner._id)){
+        return res.status(400).json({message:'You can only update your own profile'})
     }
 
     const updatedUser = await User.findOneAndUpdate({clerkId:userId},req.body,{new:true,runValidators:true});
 
     return res.status(200).json({message:'profile updated successfully',user:updatedUser});
 })
-
 
 
 
@@ -80,6 +125,10 @@ export const getCurrentUser = asyncHandler(async(req,res)=>{
 
     if(!user){
         return res.status(404).json({message:'User not found'})
+    }
+
+    if(user.accountStatus!=='active'){
+        return res.status(400).json({message:'Your account is not active.'})
     }
 
     return res.status(200).json({message:'Current user got successfully',user})

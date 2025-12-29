@@ -6,9 +6,9 @@ const userRoutes = Router();
 
 userRoutes.use(protectedRoute)
 
-userRoutes.get('/profile',getUserProfile);
+userRoutes.get('/profile/:username',getUserProfile);
 
-userRoutes.put('/profile',updateprofile);
+userRoutes.put('/profile/:username',updateprofile);
 
 userRoutes.post('/sync',adddUserToDb);
 

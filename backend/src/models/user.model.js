@@ -76,7 +76,12 @@ const userSchema = new Schema({
       default:'active'
      },
 
-
+     privacy:{
+      type:String,
+      enum:['public','private'],
+      default:'public'
+     }
+     ,
      deletedAt:{
       type:Date,
      }

@@ -10,6 +10,7 @@ export const protectedRoute = [
             return res.status(401).json({message:'Unauthorized token '})
         }
 
+
        next();
 
     }
