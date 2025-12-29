@@ -18,7 +18,7 @@ export const getUserProfile = asyncHandler(async(req,res)=>{
         return res.status(404).json({message:'Profile owner not found.'})
     }
 
-    const viewer = null;
+    let viewer = null;
 
     if(userId){
         viewer = await User.findOne({clerkId:userId});
@@ -32,7 +32,7 @@ export const getUserProfile = asyncHandler(async(req,res)=>{
         //check if viewer is a follower of profileUser ;
 
         const isFollower = await Follow.exists({
-            followerId:viewer._id,
+            followerId:viewer?._id,
             followingId:profileUser._id
         })
 
@@ -52,13 +52,13 @@ export const updateprofile = asyncHandler(async(req,res)=>{
 
     const {username} = req.params;
 
-    const currentUser = await User.findOne({clerkId:userId}).lean();
+    const currentUser = await User.findOne({clerkId:userId});
 
     if(!currentUser){
         return res.status(404).json({message:'User not found'})
     }
 
-    const profileOwner = await User.findOne({username}).lean();
+    const profileOwner = await User.findOne({username});
 
     if(!profileOwner){
         return res.status(400).json({message:'Profile not found'})

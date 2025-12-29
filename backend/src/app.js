@@ -4,7 +4,7 @@ import { clerkMiddleware } from '@clerk/express'
 import ConnectToDb from './config/db.js';
 import userRoutes from './routes/user.js';
 import cors from 'cors';
-import postRoutes from './models/post.model.js'
+import postRoutes from './routes/post.js'
 
 dotenv.config();
 
@@ -21,9 +21,9 @@ app.get('/',(req,res)=>{
 })
 
 app.use('/api/user',userRoutes);
-app.use('api/post',postRoutes);
+app.use('/api/post',postRoutes);
 
-app.use((err,req,res)=>{
+app.use((err,req,res,next)=>{
     console.log('Error : '+err.message);
     return res.status(500).json({message:err.message || 'Internal server error.'})
 })

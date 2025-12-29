@@ -1,5 +1,4 @@
 import {v2 as cloudinary} from 'cloudinary';
-import asyncHandler from 'express-async-handler';
 
 cloudinary.config({
     cloud_name:process.env.CLOUDINARY_CLOUD_NAME,
@@ -10,7 +9,7 @@ cloudinary.config({
 export default cloudinary;
 
 
-export const uploadToCloudinary = asyncHandler(async (filepath,mimeType)=>{
+export const uploadToCloudinary = async (filepath,mimeType)=>{
     
     const isVideo = mimeType.startsWith('video/');
 
@@ -25,4 +24,3 @@ export const uploadToCloudinary = asyncHandler(async (filepath,mimeType)=>{
         publicId : result.public_id
     }
 }
-)

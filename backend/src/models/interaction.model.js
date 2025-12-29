@@ -56,22 +56,22 @@ interactionSchema.pre('validate',function(next){
 
     if(this.type==='reaction'){
 
-        if(!this.reaction?.type){
+        if(!this.reaction){
            return  next(new Error('Reaction type is required'))
         }
 
-        this.reason.type = undefined;
+        this.reason = undefined;
         this.customReason = undefined;
 
         
     }
 
     if(this.type==='dislike'){
-        if(this.reason?.type){
+        if(!this.reason){
             return next(new Error('Dislike reason is required'))
         }
 
-        if(this.reason.type==='other' && !this.customReason){
+        if(this.reason==='other' && !this.customReason){
             return next(new Error('Other reason is required'))
         }
     }

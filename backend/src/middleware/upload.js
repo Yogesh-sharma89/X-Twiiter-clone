@@ -61,7 +61,7 @@ const upload = multer({
     storage,
     fileFilter,
     limits:{
-        fileSize:file.mimetype.startsWith('images/') ? '5*1024*1024' : '20*1024*1024',
+        fileSize: '20*1024*1024',
         files:5 //maximum 5 files 
     }
 })

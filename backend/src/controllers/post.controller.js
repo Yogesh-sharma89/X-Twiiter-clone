@@ -20,7 +20,7 @@ export const getAllPosts = asyncHandler(async (req, res) => {
 
 
     if (cursor) {
-        query._id = { $lt: new mongoose.Schema.Types.ObjectId(cursor) }
+        query._id = { $lt: new mongoose.Types.ObjectId(cursor)}
     }
 
     const posts = await Post.aggregate([
@@ -157,7 +157,7 @@ export const getUserPosts = asyncHandler(async (req, res) => {
     const query = { userId: postOwner._id, isDeleted: false };
 
     if (cursor) {
-        query._id = { $lt: new mongoose.Schema.Types.ObjectId(cursor) }
+        query._id = { $lt: new mongoose.Types.ObjectId(cursor) }
     }
 
     let nextCursor = null;
@@ -203,7 +203,7 @@ export const createPost = asyncHandler(async (req, res) => {
 
     const { content, visibility, allowedUsers } = req.body;
 
-    if (!content || !req.files || req.files.length === 0) {
+    if (!content && (!req.files || req.files.length === 0)) {
         return res.status(400).json({ message: 'Post must have either content or media ' });
     }
 
@@ -253,7 +253,7 @@ export const deletePost = asyncHandler(async (req, res) => {
 
     const { postId } = req.params;
 
-    const user = null;
+    let user = null;
 
     if (userId) {
         user = await User.findOne({ clerkId: userId });
@@ -344,6 +344,8 @@ export const likePost = asyncHandler(async (req, res) => {
             })
 
             if (!isFollower) {
+                await session.abortTransaction();
+                session.endSession();
                 return res.status(403).json({ message: 'You are not allowed to react on this post' })
             }
         }
@@ -354,6 +356,8 @@ export const likePost = asyncHandler(async (req, res) => {
             const isUserAllowed = post.allowedUsers.includes(currentUser._id);
 
             if (!isUserAllowed) {
+                 await session.abortTransaction();
+                session.endSession();
                 return res.status(403).json({ message: 'Not authorized to interect with this post as it is private post' })
             }
         }
@@ -387,7 +391,7 @@ export const likePost = asyncHandler(async (req, res) => {
             type:interactionType,
             reaction:interactionType==='reaction' ? reactionType : null , 
             post:post._id
-        })
+        },{session})
         }
 
         //increase post like or dislike count
@@ -422,10 +426,12 @@ export const likePost = asyncHandler(async (req, res) => {
 
             } else {
                 //update the reaction 
+                let oldReaction = existingInteraction.reaction;
+
                 await Interaction.findByIdAndUpdate(existingInteraction._id, { reaction: reactionType }, { session })
 
-                post.reactionsCount[existingInteraction.reaction] += 1;
-                post.totalReactions += 1;
+                post.reactionsCount[oldReaction] -= 1;
+                post.reactionsCount[reactionType]+=1;
                 await post.save({ session })
 
                 await session.commitTransaction();
@@ -454,15 +460,17 @@ export const likePost = asyncHandler(async (req, res) => {
         if (existingInteraction.type === 'reaction' && interactionType === 'dislike') {
             //add dislike and remove reaction
 
+            let oldReaction = existingInteraction.reaction;
+
             existingInteraction.reaction = null;
-            existingInteraction.reason = reason | null,
-                existingInteraction.customReason = customReason || ''
+            existingInteraction.reason = reason || null,
+            existingInteraction.customReason = customReason || ''
 
             await existingInteraction.save({ session });
 
             //now update post reaction and dislike count ;
 
-            post.reactionsCount[existingInteraction.reaction] -= 1;
+            post.reactionsCount[oldReaction] -= 1;
             post.dislikeCount += 1;
             post.totalReactions -= 1;
 
@@ -485,7 +493,7 @@ export const likePost = asyncHandler(async (req, res) => {
             post.totalReactions += 1;
             post.dislikeCount -= 1;
 
-            await post.save();
+            await post.save({session});
 
             await session.commitTransaction();
 

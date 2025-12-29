@@ -1,6 +1,6 @@
 import {Router} from 'express';
 import { protectedRoute } from '../middleware/auth.js';
-import { deletePost, dislikePost, getAllPosts, getPost, getUserPosts, likePost, updatePost } from '../controllers/post.controller.js';
+import { createPost, deletePost, getAllPosts, getPost, getUserPosts, likePost, updatePost } from '../controllers/post.controller.js';
 import upload from '../middleware/upload.js';
 import handleMulterError from '../middleware/multerError.js';
 
