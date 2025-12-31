@@ -34,9 +34,11 @@ const StartConnection = async ()=>{
     try{
         await ConnectToDb();
 
-        app.listen(port,()=>{
-            console.log('Server is up and listening at 3000 👍⚡')
-        })
+        if(process.env.NODE_ENV!=='production'){
+              app.listen(port,()=>{
+                    console.log('Server is up and listening at 3000 👍⚡')
+                })
+        }
 
     }catch(err){
         console.log('Error in main server file : '+err);
@@ -47,4 +49,5 @@ const StartConnection = async ()=>{
 StartConnection();
 
 
-
+//export for vercel
+export default app;
