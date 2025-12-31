@@ -35,7 +35,7 @@ import { aj } from "../config/arcjet.js";
 
     }catch(err){
         console.log('Arcjet middleware error : '+err);
-        next();
+        next(err);
 
     }
 }

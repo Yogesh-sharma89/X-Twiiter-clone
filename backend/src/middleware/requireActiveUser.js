@@ -1,3 +1,4 @@
+import { getAuth } from "@clerk/express";
 import User from "../models/user.model.js";
 
 export const requireActiveUser = async(req,res,next)=>{

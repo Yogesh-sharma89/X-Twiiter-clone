@@ -10,7 +10,7 @@ notificationRoutes.use(protectedRoute,requireActiveUser);
 
 notificationRoutes.get('/',getAllNotifications);
 
-notificationRoutes.post('/:notificationId/mark-read',loadNotification,markReadNotification);
+notificationRoutes.patch('/:notificationId/mark-read',loadNotification,markReadNotification);
 
 notificationRoutes.delete('/:notificationId',loadNotification,deleteNotification);
 

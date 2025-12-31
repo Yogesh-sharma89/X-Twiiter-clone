@@ -33,7 +33,9 @@ export const deleteNotification = asyncHandler(async(req,res)=>{
 
     //delete the notification 
 
-    await Notification.findByIdAndDelete(notificationId);
+     const notification = req.notification;
+
+    await Notification.findByIdAndDelete(notification._id);
 
     return res.status(200).json({message:'Notification deleted successfully'});
 })

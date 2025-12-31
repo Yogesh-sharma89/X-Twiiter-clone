@@ -1,4 +1,4 @@
-import arcjet , {tokenBucket,shield,detectBot, fixedWindow } from '@arcjet/node'
+import arcjet , {tokenBucket,shield,detectBot } from '@arcjet/node'
 
 export const aj = arcjet({
   key:process.env.ARCJET_KEY,
