@@ -419,9 +419,9 @@ export const commentInteraction = asyncHandler(async(req,res)=>{
             //then remove reaction and add dislike 
 
             existingInteraction.reaction = null;
-            existingInteraction.type = 'dislike';
+            existingInteraction.type = 'dislike',
             existingInteraction.reason = reason;
-            existingInteraction.customReason = reason==='other' ? customReason : '';
+            existingInteraction.customReason = reason==='other' ? customReason : ''
 
             //upadate comment 
             comment.reactionsCount[oldReaction]-=1;
@@ -430,10 +430,10 @@ export const commentInteraction = asyncHandler(async(req,res)=>{
         }else{
             //now remove dislike and add reaction;
 
-            existingInteraction.reaction = reactionType;
-            existingInteraction.type = 'reaction';
+            existingInteraction.reaction = reactionType,
+            existingInteraction.type = 'reaction',
             existingInteraction.reason=null;
-            existingInteraction.customReason='';
+            existingInteraction.customReason='',
 
             // update comment 
             comment.reactionsCount[reactionType]+=1;
