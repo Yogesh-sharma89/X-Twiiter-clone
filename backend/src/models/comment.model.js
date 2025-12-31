@@ -19,21 +19,21 @@ const commentSchema = new Schema({
         maxLength:200,
         required:true
     },
-    likes:[
-        {
-            type:Schema.Types.ObjectId,
-            ref:'User',
-        
-        }
-    ],
-    dislikes:[
-        {
-            type:Schema.Types.ObjectId,
-            ref:'User',
-        
-        }
-    ],
-
+    reactionsCount: {
+        like: { type: Number, default: 0 },
+        love: { type: Number, default: 0 },
+        haha: { type: Number, default: 0 },
+        support: { type: Number, default: 0 },
+        insightful: { type: Number, default: 0 },
+    },
+    totalReactions:{
+        type:Number,
+        default:0
+    },
+    dislikeCount:{
+        type:Number,
+        default:0,
+    },
     parentCommentId: {
         type: Schema.Types.ObjectId,
         ref: "Comment",
@@ -59,6 +59,9 @@ const commentSchema = new Schema({
     isDeleted:{
         type:Boolean,
         default:false
+    },
+    deletedAt:{
+        type:Date
     }
 
 

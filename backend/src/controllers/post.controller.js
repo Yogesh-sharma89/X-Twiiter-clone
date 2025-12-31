@@ -4,10 +4,11 @@ import mongoose from "mongoose";
 import { getAuth } from "@clerk/express";
 import User from '../models/user.model.js';
 import Follow from '../models/follow.model.js'
-import { uploadToCloudinary } from "../config/cloudinary.js";
+import cloudinary, { uploadToCloudinary } from "../config/cloudinary.js";
 import fs from 'fs/promises';
 import Interaction from "../models/interaction.model.js";
 import Notification from "../models/notification.model.js";
+import Comment from '../models/comment.model.js';
 
 export const getAllPosts = asyncHandler(async (req, res) => {
 
@@ -85,6 +86,11 @@ export const getPost = asyncHandler(async (req, res) => {
 
     const { userId } = getAuth(req);
 
+    const {cursor} = req.query;
+
+    const limit = 20;
+    
+
     const post = await Post.findById(postId).populate('userId', 'username firstname lastname  imageUrl');
 
     if (!post || post.isDeleted) {
@@ -97,40 +103,49 @@ export const getPost = asyncHandler(async (req, res) => {
         return res.status(404).json({ message: 'User not found' })
     }
 
+    const isOwner  = post.userId.equals(viewer._id);
 
-    if (post.visibility === 'public' || viewer._id.equals(post.userId)) {
-        return res.status(200).json({ message: `post with Id : ${postId} fetch successfully`, post });
-    }
+    if(!isOwner){
 
-    if (post.visibility === 'followers') {
-        //check if the current user is following the post owner 
+        if(post.visibility==='followers'){
 
-        const isFollowing = await Follow.exists({
+            const isFollowing = await Follow.exists({
             followerId: viewer._id,
             followingId: post.userId
-        })
+           })
 
-        if (!isFollowing) {
-            return res.status(403).json({ message: 'Only followers can see this post' })
+            if (!isFollowing) {
+                return res.status(403).json({ message: 'Only followers can see this post' })
+            }
+
         }
 
-        return res.status(200).json({ post });
-    }
-
-    //if no if run it means post visibility in private
-
-    if (post.visibility === 'private') {
+         if (post.visibility === 'private') {
         //check if user exist in allowed user or not 
 
-        const isUserAllowed = post.allowedUsers.includes(viewer._id);
+                const isUserAllowed = post.allowedUsers.includes(viewer._id);
 
-        if (isUserAllowed) {
-            return res.status(200).json(post);
+                if (!isUserAllowed) {
+                    return res.status(403).json({ message: 'This post is private . Only owner and allowed users can see this' });
+                }
         }
+
+
     }
 
-    return res.status(403).json({ message: 'This post is private . Only ownera and allowed users can see this' })
+    const commentsQuery  = {post:post._id,parentCommentId:null}
 
+
+    if(cursor){
+        commentsQuery._id={$lt:mongoose.Types.ObjectId(cursor)}
+    }
+
+    //fetch  top level comment for that users also 
+
+    const comments = await Comment.find(commentsQuery).sort({_id:-1}).limit(limit).lean().populate('user','username imageUrl')
+    const nextCursor = comments.length === limit ? comments[comments.length-1] : null;
+
+    return res.status(200).json({post,comments,cursor:nextCursor});
 
 })
 
@@ -141,8 +156,6 @@ export const getUserPosts = asyncHandler(async (req, res) => {
     const limit = 20;
 
     const { cursor } = req.query;
-
-
 
     const postOwner = await User.findOne({ username });
 
@@ -243,7 +256,59 @@ export const createPost = asyncHandler(async (req, res) => {
 
 export const updatePost = asyncHandler(async (req, res) => {
 
+   const {userId} = getAuth(req);
 
+   const {postId} = req.params;
+
+   const {content,visibility} = req.body;
+
+   const currentUser = await User.findOne({clerkId:userId});
+
+   if(!currentUser || currentUser.accountStatus==='deleted'){
+    return res.status(404).json({message:'User not found'})
+   }
+
+   const post = await Post.findById(postId);
+
+   if(!post || post.isDeleted){
+    return res.status(404).json({message:'Post not found.'})
+   }
+
+   if(!post.userId.equals(currentUser._id)){
+    return res.status(403).json({message:'You are not allowed to update this post'})
+   }
+
+   let newMedia = null
+
+   if(req.files && req.files.length>0){
+     //then only remove old files and upload new files 
+
+     for ( const file of post.media){
+        await cloudinary.uploader.destroy(file.publicId);
+     }
+
+     //now upload 
+
+       newMedia = await Promise.all(
+        (req.files || []).map(async (file) => {
+            const result = await uploadToCloudinary(file.path, file.mimetype);
+
+            await fs.unlink(file.path);
+
+            return result;
+        })
+
+       )
+   }
+
+   if(content!==undefined) post.content='';
+
+   post.media = newMedia;
+   post.visibility = visibility;
+
+   await post.save();
+
+   return res.status(200).json({message:'Post updated successfully',post});
 
 })
 
@@ -368,6 +433,7 @@ export const likePost = asyncHandler(async (req, res) => {
 
     //check interaction exist for this user or not 
 
+
     const existingInteraction = await Interaction.findOne({ postId: post._id, userId: currentUser._id }, {}, { session });
 
     if (!existingInteraction) {
@@ -398,11 +464,11 @@ export const likePost = asyncHandler(async (req, res) => {
         if (interactionType === 'reaction') {
             post.reactionsCount[reactionType] += 1;
             post.totalReactions += 1;
-            await post.save({ session });
         } else {
             post.dislikeCount += 1;
-            await post.save({ session });
         }
+
+         await post.save({ session });
 
         await session.commitTransaction();
 
@@ -416,7 +482,7 @@ export const likePost = asyncHandler(async (req, res) => {
                 //then delete that interaction
                 await Interaction.findByIdAndDelete(existingInteraction._id, { session });
 
-                post.reactionsCount[existingInteraction.reaction] -= 1;
+                post.reactionsCount[reactionType] -= 1;
                 post.totalReactions -= 1;
                 await post.save({ session });
 
