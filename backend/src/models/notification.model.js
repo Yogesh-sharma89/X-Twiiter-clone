@@ -14,7 +14,7 @@ const notificationSchema = new Schema({
     },
     type:{
         type:String,
-        enum:['follow','reaction','comment','dislike'],
+        enum:['follow','reaction','comment','dislike','comment_reply'],
         required:true
     },
     reaction:{
@@ -28,6 +28,11 @@ const notificationSchema = new Schema({
         default:null
     },
     comment:{
+        type:Schema.Types.ObjectId,
+        ref:'Comment',
+        default:null
+    },
+    commentReply:{
         type:Schema.Types.ObjectId,
         ref:'Comment',
         default:null

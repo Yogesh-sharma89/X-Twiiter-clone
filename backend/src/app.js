@@ -5,6 +5,7 @@ import ConnectToDb from './config/db.js';
 import userRoutes from './routes/user.js';
 import cors from 'cors';
 import postRoutes from './routes/post.js'
+import commentRoutes from './routes/comment.js';
 
 dotenv.config();
 
@@ -22,6 +23,7 @@ app.get('/',(req,res)=>{
 
 app.use('/api/user',userRoutes);
 app.use('/api/post',postRoutes);
+app.use('/api/comment',commentRoutes);
 
 app.use((err,req,res,next)=>{
     console.log('Error : '+err.message);
