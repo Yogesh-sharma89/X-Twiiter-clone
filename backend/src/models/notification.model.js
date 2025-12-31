@@ -32,11 +32,6 @@ const notificationSchema = new Schema({
         ref:'Comment',
         default:null
     },
-    commentReply:{
-        type:Schema.Types.ObjectId,
-        ref:'Comment',
-        default:null
-    },
     isRead:{
         type:Boolean,
         default:false,

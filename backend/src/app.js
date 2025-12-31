@@ -6,6 +6,8 @@ import userRoutes from './routes/user.js';
 import cors from 'cors';
 import postRoutes from './routes/post.js'
 import commentRoutes from './routes/comment.js';
+import notificationRoutes from './routes/notification.js';
+import ArcjetMiddleware from './middleware/arcjet.middleware.js';
 
 dotenv.config();
 
@@ -17,13 +19,17 @@ app.use(express.json());
 app.use(clerkMiddleware())
 app.use(cors());
 
+//arcjet middleware 
+app.use(ArcjetMiddleware);
+
 app.get('/',(req,res)=>{
     return res.json({message:'Server is up and running properly'})
 })
 
-app.use('/api/user',userRoutes);
-app.use('/api/post',postRoutes);
-app.use('/api/comment',commentRoutes);
+app.use('/api/users',userRoutes);
+app.use('/api/posts',postRoutes);
+app.use('/api/comments',commentRoutes);
+app.use('/api/notifications',notificationRoutes);
 
 app.use((err,req,res,next)=>{
     console.log('Error : '+err.message);
