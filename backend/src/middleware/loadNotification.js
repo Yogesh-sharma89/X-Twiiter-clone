@@ -1,6 +1,9 @@
 import Notification from "../models/notification.model.js";
 
 export const loadNotification = async (req, res, next) => {
+  try{
+
+  
   const { notificationId } = req.params;
 
   const notification = await Notification.findById(notificationId);
@@ -16,4 +19,8 @@ export const loadNotification = async (req, res, next) => {
 
   req.notification = notification;
   next();
+  }catch(err){
+    console.log('Error in loadNotification middleware : '+err);
+    return res.status(500).json({message:'Internal server error.'})
+  }
 };

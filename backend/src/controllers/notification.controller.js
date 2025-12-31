@@ -16,6 +16,9 @@ export const getAllNotifications = asyncHandler(async(req,res)=>{
     const query = {to:currentUser._id}
 
     if(cursor){
+        if(!mongoose.Types.ObjectId.isValid(cursor)){
+            return res.status(400).json({message:'Invalid cursor parameter'});
+        }
         query._id={$lt:new mongoose.Types.ObjectId(cursor)}
     }
 

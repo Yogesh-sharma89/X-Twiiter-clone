@@ -2,6 +2,10 @@ import { getAuth } from "@clerk/express";
 import User from "../models/user.model.js";
 
 export const requireActiveUser = async(req,res,next)=>{
+
+    try{
+
+    
      const {userId} = getAuth(req);
 
      
@@ -17,4 +21,9 @@ export const requireActiveUser = async(req,res,next)=>{
 
         req.user = user; // 🔥 attach to req
         next();
+
+    }catch(err){
+        console.log('Error in require active user middleware : '+err);
+        return res.status(500).json({message:'Interna; server error'})
+    }
 }
