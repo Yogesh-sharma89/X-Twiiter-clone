@@ -77,6 +77,4 @@ commentInteractionSchema.pre('validate',function(next){
 
 const CommentInteraction = model('CommentInteraction',commentInteractionSchema);
 
-
-
 export default CommentInteraction;
