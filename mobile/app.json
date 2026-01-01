@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "twitter",
-    "slug": "twitter",
+    "name": "mobile",
+    "slug": "mobile",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "twitter",
+    "scheme": "mobile",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
@@ -24,7 +24,7 @@
     "web": {
       "output": "static",
       "favicon": "./assets/images/favicon.png",
-      "bundler": "metro"
+       "bundler": "metro"
     },
     "plugins": [
       "expo-router",
